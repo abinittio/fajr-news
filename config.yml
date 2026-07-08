@@ -67,7 +67,7 @@ digest:
         an <h3> naming it followed by a <ul> of two or three short bullets, in order.
     - name: MarketMobster
       feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCjJ90kZCcv5oTSeqJLlFyqA
-      min_words: 400   # skip Shorts; summarise his substantive videos
+      min_words: 150   # accept his shorter long-form uploads too (Shorts already excluded by URL)
       style: >
         His key market and crypto insights, calls, and reasoning from this video, as a <ul>
         of short bullet points. I want the takeaways, not a play-by-play.

@@ -1,0 +1,55 @@
+name: Fajr news digest
+
+on:
+  schedule:
+    # Every 15 minutes across the pre-dawn window (UTC). London Fajr falls inside
+    # this range all year. Each tick is a cheap no-op until Fajr has passed, then
+    # exactly one tick builds the page. Times are offset off the hour on purpose:
+    # top-of-hour schedules are congested and drift more on the free tier.
+    # Widen the hours if you switch to a high-latitude rule that gives very early Fajr.
+    - cron: "2,17,32,47 0-7 * * *"
+  workflow_dispatch: # manual "Run workflow" button, for testing
+    inputs:
+      force:
+        description: "Build now, ignoring the Fajr gate and the once-a-day guard"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # so the job can commit the generated page back
+
+concurrency:
+  group: fajr-digest # never run two builds at once (avoids a double push)
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Build digest if Fajr has passed
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FORCE: ${{ inputs.force }}
+        run: python build.py
+
+      - name: Commit if the page changed
+        run: |
+          git config user.name "fajr-digest-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html state/last_run.txt
+          if git diff --cached --quiet; then
+            echo "Nothing new this tick."
+          else
+            git commit -m "Digest $(date -u +%Y-%m-%d)"
+            git push
+          fi

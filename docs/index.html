@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nabil&#x27;s morning brief</title>
+<style>
+:root{ --bg:#f7f5f2; --fg:#191919; --muted:#6f6f6f; --line:#e6e2db; --card:#fff;
+  --accent:#0f6d5c; --chip:#ece8e1; --chipA:#0f6d5c; --chipAfg:#fff; }
+@media (prefers-color-scheme: dark){ :root{ --bg:#141414; --fg:#ececec; --muted:#9a9a9a;
+  --line:#2a2a2a; --card:#1c1c1c; --accent:#4cc3ab; --chip:#242424; --chipA:#4cc3ab; --chipAfg:#0b0b0b; } }
+:root[data-theme="light"]{ --bg:#f7f5f2; --fg:#191919; --muted:#6f6f6f; --line:#e6e2db;
+  --card:#fff; --accent:#0f6d5c; --chip:#ece8e1; --chipA:#0f6d5c; --chipAfg:#fff; }
+:root[data-theme="dark"]{ --bg:#141414; --fg:#ececec; --muted:#9a9a9a; --line:#2a2a2a;
+  --card:#1c1c1c; --accent:#4cc3ab; --chip:#242424; --chipA:#4cc3ab; --chipAfg:#0b0b0b; }
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--fg);
+  font:1.02rem/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+a{ color:var(--accent); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+.top{ position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line);
+  padding:.75rem 1rem; display:flex; align-items:baseline; gap:.6rem; }
+.top h1{ font-size:1.1rem; margin:0; }
+.top .meta{ color:var(--muted); font-size:.8rem; }
+.top .spacer{ flex:1; }
+.top button{ background:var(--chip); color:var(--fg); border:0; border-radius:999px;
+  padding:.35rem .65rem; font-size:.9rem; cursor:pointer; }
+.chips{ position:sticky; top:3rem; z-index:4; background:var(--bg); border-bottom:1px solid var(--line);
+  display:flex; gap:.4rem; overflow-x:auto; padding:.55rem 1rem; scrollbar-width:none; }
+.chips::-webkit-scrollbar{ display:none; }
+.chip{ white-space:nowrap; background:var(--chip); color:var(--fg); border:0; border-radius:999px;
+  padding:.35rem .8rem; font-size:.85rem; cursor:pointer; }
+.chip.active{ background:var(--chipA); color:var(--chipAfg); }
+.toolbar{ max-width:760px; margin:0 auto; padding:.8rem 1rem 0; display:flex; gap:.5rem; }
+.toolbar input{ flex:1; background:var(--card); color:var(--fg); border:1px solid var(--line);
+  border-radius:.6rem; padding:.5rem .8rem; font-size:.95rem; }
+.toolbar button{ background:var(--chip); color:var(--fg); border:0; border-radius:.6rem;
+  padding:.5rem .8rem; font-size:.85rem; cursor:pointer; white-space:nowrap; }
+main{ max-width:760px; margin:0 auto; padding:1rem; }
+section{ background:var(--card); border:1px solid var(--line); border-radius:.8rem;
+  margin:0 0 1rem; box-shadow:0 1px 2px rgba(0,0,0,.04); overflow:hidden; }
+section h2{ font-size:1.1rem; margin:0; padding:.9rem 1rem; cursor:pointer;
+  display:flex; align-items:center; gap:.5rem; }
+section h2::before{ content:"\25be"; color:var(--muted); font-size:.75rem; transition:transform .15s; }
+section.collapsed h2::before{ transform:rotate(-90deg); }
+section .body{ padding:0 1rem 1rem; }
+section.collapsed .body{ display:none; }
+section h3{ font-size:1rem; margin:1rem 0 .3rem; }
+section p{ margin:.5rem 0; }
+section ul{ margin:.4rem 0 .8rem; padding-left:1.2rem; }
+section li{ margin:.25rem 0; }
+section article{ margin:.7rem 0; }
+section article h3{ margin:0 0 .2rem; }
+.source{ color:var(--muted); font-size:.82rem; margin:.15rem 0 0; }
+.note{ background:var(--chip); padding:.6rem .8rem; border-radius:.5rem; font-size:.9rem;
+  margin:0 auto 1rem; max-width:760px; }
+footer{ max-width:760px; margin:0 auto; padding:1.4rem 1rem 3rem; color:var(--muted); font-size:.8rem; }
+.empty{ color:var(--muted); text-align:center; padding:2rem; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Nabil&#x27;s morning brief</h1>
+  <span class="meta">Wednesday 08 July 2026 &middot; Fajr 03:48</span>
+  <span class="spacer"></span>
+  <button id="theme" title="Toggle light/dark">&#9680;</button>
+</header>
+<nav class="chips" id="nav"></nav>
+<div class="toolbar">
+  <input id="filter" type="search" placeholder="Filter the feed..." autocomplete="off">
+  <button id="toggleAll">Collapse all</button>
+</div>
+<main id="feed">
+<section>
+    <h2>Nothing But Facts</h2>
+    <p>
+        <a href="https://www.youtube.com/watch?v=SkcI5zVPLnU">Ya Sayyidi Ya Rasul Allah || NBF 590 || Imam John Starling</a>
+    </p>
+
+    <h3>Scholarship and Learning</h3>
+    <ul>
+        <li>Reading aloud has been scientifically shown to improve memory, as highlighted by a fascinating paper titled "Reading text aloud benefits memory, but not comprehension," published in the National Institutes of Health's PubMed database and the journal *Memory & Cognition*. This aligns with the traditional Islamic method of memorizing the Quran and other texts, which often involves vocal recitation.</li>
+        <li>While scientific discoveries and psychological studies can add a layer of marvel to religious understanding, faith should not be solely pinned on scientific validation. The Quran's miraculous nature continually engages humanity, with meanings unfolding across generations, even if earlier generations lacked the tools to fully observe certain realities.</li>
+    </ul>
+
+    <h3>Religious Understanding</h3>
+    <ul>
+        <li>The Quran's opening verses command "Read in the name of your Lord who created," and then describe the creation of humans from a "clinging clot." This specific point of embryological development was observable to people at the time of revelation (e.g., through miscarriages), establishing undeniable truths before later revelations delved into more complex, tool-dependent scientific details like mountains acting as pegs or the full stages of embryology.</li>
+        <li>The miracle of the moon splitting, witnessed by the polytheists of Mecca, demonstrates that disbelief is often a moral or emotional problem, not merely an intellectual one. Despite overwhelming evidence, they reinterpreted or denied the truth to preserve pre-existing beliefs driven by pride, prejudice, arrogance, and desire, rather than a sincere quest for guidance.</li>
+        <li>The prophet's foretelling of Islam's spread "as far as the eastern and western reaches" of the earth is an enduring miracle, fulfilled by the global presence of Muslims today. This widespread presence serves as a continuous testament to the truth of the prophecy.</li>
+        <li>Miracles such as trees moving, barren animals producing milk, and the instantaneous healing of injuries (like a dislodged eyeball or eye ailments) demonstrate Allah's power through His prophets. These events highlight the profound love and reverence the companions and subsequent generations held for the Prophet, viewing him as a central figure in their faith and a means of Allah's blessings and healing.</li>
+        <li>The enduring love and reverence for the Prophet Muhammad are exemplified in historical accounts where Muslims, even generations after his passing, would invoke his name to alleviate physical ailments, such as a numb leg. This practice, documented by scholars like Al-Tirmidhi in "The Goodly Word," illustrates a continuous pattern of seeking blessings and spiritual connection through the Prophet.</li>
+        <li>Scholars and poets like As-Sarsari and Al-Bahuti expressed deep devotion to the Prophet, seeking his intercession and aid in times of distress and in the hereafter. Their poetic articulations and prescribed prayers for visiting the Prophet's grave underscore a belief in his elevated status as an intercessor and a source of mercy, a practice that highlights the centrality of his role in the devotional life of Muslims throughout history.</li>
+    </ul>
+</section>
+<section>
+    <h2>MarketMobster</h2>
+    <p>A summary of MarketMobster's video, <a href="https://www.youtube.com/watch?v=m_rFV4pi7YI">Something Just Changed In Crypto</a>:</p>
+    <ul>
+        <li>Current crypto market conditions (Bitcoin and altcoins) are weak, teetering on support levels, and signify a "risk-off" environment.</li>
+        <li>Bounces in the market have been weak, and the overall sentiment has been subdued for a long time.</li>
+        <li>The speaker expects Bitcoin to drop to significantly lower levels in the next couple of months, advising a buy-in much lower down when current support areas are lost.</li>
+        <li>Bitcoin is increasingly institutional, while the broader crypto market (altcoins, meme coins) remains highly speculative.</li>
+        <li>Many altcoins, especially older ones, are no longer performing as well, with regulatory-compliant coins like Hedera Hashgraph and XRP being potential exceptions, but their long-term trust is still uncertain.</li>
+        <li>Speculation, hype, and retail interest in altcoins are low due to repeated investor losses.</li>
+        <li>A significant concern is a new product involving MicroStrategy's Michael Saylor, offering 24% dividends, which the speaker suspects might necessitate selling Bitcoin to maintain, changing the long-held "never sell Bitcoin" narrative.</li>
+        <li>The speaker views this new product as potentially a "Ponzi scheme in information" and a major warning sign for Bitcoin's narrative and future.</li>
+        <li>Institutional involvement and the rise of ETFs haven't made Bitcoin "as good as it was," suggesting the "easy money" period might be over, and it should be treated more like an index fund.</li>
+        <li>Spot ETFs indicate money is flowing out of the market, with fear driving many long positions to be flushed.</li>
+        <li>Leverage and speculation are not the same; speculation is drying up as investors seek safety, and Bitcoin is not bouncing enough.</li>
+        <li>The market is currently a "trader's market" for short-term plays, with positional holding being key, and a lack of significant growth.</li>
+        <li>Bitcoin and Ethereum are not strong enough currently, with the speaker having considered shorting Ethereum to three-figure numbers due to insufficient bounces.</li>
+        <li>The market has been doing "nothing for days," with a need for patience as the bottom is awaited, possibly in October or later.</li>
+        <li>The biggest concern for the market's future remains Michael Saylor's strategy and its potential impact on Bitcoin's narrative.</li>
+    </ul>
+</section>
+<section>
+<h2>Ummah</h2>
+<p>The US has launched a series of "powerful strikes" against Iran in the Hormuz Strait region, with reports from US media indicating these attacks are expected to continue. Fresh explosions were heard in Iran's Qeshm and Kharg, and Iran has warned of "consequences" in response to the US actions. This comes after the US revoked Iran's oil sales authorization following recent tanker attacks and despite a promised pause for Khamenei's funeral. Iranian President Pezeshkian has reportedly left Iraq for Iran following the US strikes on the southern coast. Qatar has also summoned an Iranian diplomat over an attack on an LNG tanker, and Iran accuses the US of breaching an MoU over an oil sanctions waiver. Al Jazeera reports on how this escalating US-Iran conflict is reshaping Africa’s geopolitical opportunities. In a separate incident, a US immigration officer shot and killed a man in Texas.</p>
+</section>
+<section>
+<h2>London</h2>
+<p>The London Fire Brigade handled a record number of calls in 24 hours. Separately, four historic London theatres have been placed on an at-risk register, highlighting concerns about their future. In legal news, architects of the Gherkin are currently on trial in connection with a 2018 window death. On a lighter note, Brixton Village has been officially named an asset of community value, recognizing its importance to the local area. Tottenham has sealed a £100m move for Newcastle's Tonali, and Preston has signed Devine from Spurs for a club-record fee.</p>
+</section>
+<section>
+<h2>Tech</h2>
+<p>New regulations in the European Union mandate that every new car sold must include a driver monitoring camera. In cybersecurity news, Tenda firmware across multiple versions has been found to contain a hidden authentication backdoor. Meanwhile, Meta's smart glasses will now disable the camera if the privacy light is tampered with, and their new Muse Image AI model allows pulling other Instagram users into AI-generated photos. Data centers' increasing energy demands are reportedly threatening Donald Trump's "Made in America" plan, as US manufacturers face soaring energy costs due to AI demand. The Supreme Court has allowed Texas to enforce an app store law that Big Tech companies are calling a "censorship regime."</p>
+</section>
+<section>
+<h2>Medical</h2>
+<p>The FDA has approved Vera Therapeutics' kidney disease treatment, marking a significant development in medical care. In cancer research, scientists have made two surprising discoveries: a cancer fighter found hiding inside tumors and how colon cancer cells change identity to spread. Separately, textbooks were found to be incorrect regarding how human hair truly grows, and scientists have solved a 30-year rye pollen mystery that could transform cancer research. An Ebola outbreak is exposing a fractured global response system, with opinions raised on whether this outbreak can be stopped. Meanwhile, America's employer-based health insurance system is described as decaying, with small businesses increasingly struggling with affordability, leading to a dramatic shrinkage in Obamacare rolls in many states. Compass Pathways reports that its depression drug has long-lasting benefits.</p>
+</section>
+<section>
+<h2>Financial</h2>
+<p>The SEC has highlighted crypto rule changes as a high priority on its 2026 agenda. In market movements, Ether is climbing towards $2,000 following Bitmine's ETH purchases and a boost from Robinhood's L2 support. Even Vanguard, known for its crypto skepticism, is now seeking a digital assets chief. In other crypto news, New Hampshire lawmakers are set to hold a hearing on a proposed $100 million Bitcoin bond. On the traditional markets front, chip stocks experienced a sell-off after Samsung's earnings fell short of high AI expectations, though traders are betting on a significant Nvidia rally. Chinese autonomous-driving firm Momenta saw a 3% rise in its Hong Kong stock debut. Separately, the US has resumed "powerful strikes" on Iran after Hormuz Strait ship attacks and revoked Iran's oil sales authorization. Traders on Kalshi predict the Nasdaq-100 will end 2026 above 30,000, signaling a cooler second half of the year, and see slim odds of the U.S. government taking a stake in OpenAI this year. A judge has blocked a DOJ subpoena for the names of 2020 Fulton County, Georgia, election workers, a development relevant to ongoing issues surrounding Donald Trump.</p>
+</section>
+<section>
+<h2>Sports</h2>
+<p>Switzerland has advanced to the World Cup quarter-finals after beating Colombia on penalties. This comes as Egypt fumes over alleged "injustice" and claims of Messi favoritism after their controversial exit following Argentina's incredible late comeback against them. In Premier League news, Deloitte's review shows that Premier League clubs' pre-tax losses have surged by 600% to £948m. Fulham has appointed Arbeloa as Silva's successor. In combat sports, the main and co-main events for UFC Sacramento have been made official, and Waldo Cortes-Acosta vs. Curtis Blaydes is reportedly in the works for Noche UFC 4. The official poster for UFC 330: Makhachev vs. Machado Garry has been revealed, and custom shorts for Conor McGregor and King Green for UFC 329 were also unveiled. Sean Strickland issued an apology to Dustin Poirier for past comments.</p>
+</section>
+<section>
+<h2>Podcasts</h2>
+<p><a href="https://www.youtube.com/watch?v=fskvPHzSHNw">Safina Society: Chatting About Islam w/ Fred & Mike || NBF 591 || Dr Shadee Elmasry</a></p>
+<p><a href="https://www.youtube.com/watch?v=3a322F6e-Zw">Safina Society: Salafis vs. Sufis: What Would the Prophet ﷺ Say?</a></p>
+<p><a href="https://www.youtube.com/watch?v=64ycCPM1e0w">The Thinking Muslim: 1,000 Days Later: Why the Resistance Still Exists | Dr. Azzam Tamimi</a></p>
+</section>
+</main>
+<footer>Auto-generated daily at Fajr. Summaries are synthesised across the linked sources
+and may contain errors; follow the links for the originals.</footer>
+<script>
+(function(){
+  var feed=document.getElementById('feed');
+  var sections=[].slice.call(feed.querySelectorAll(':scope > section'));
+  sections.forEach(function(sec,i){
+    var h2=sec.querySelector('h2'); if(!h2) return;
+    if(!sec.id) sec.id='sec'+i;
+    var body=document.createElement('div'); body.className='body';
+    var n=h2.nextSibling;
+    while(n){ var nx=n.nextSibling; body.appendChild(n); n=nx; }
+    sec.appendChild(body);
+    h2.addEventListener('click',function(){ sec.classList.toggle('collapsed'); });
+  });
+  var nav=document.getElementById('nav');
+  var chips=sections.map(function(sec){
+    var h2=sec.querySelector('h2'); if(!h2) return null;
+    var b=document.createElement('button'); b.className='chip';
+    b.textContent=h2.textContent.trim(); b.dataset.sec=sec.id;
+    b.addEventListener('click',function(){
+      sec.classList.remove('collapsed');
+      sec.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    nav.appendChild(b); return b;
+  }).filter(Boolean);
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){
+        chips.forEach(function(c){ c.classList.toggle('active', c.dataset.sec===e.target.id); });
+      }});
+    },{rootMargin:'-25% 0px -65% 0px'});
+    sections.forEach(function(s){ io.observe(s); });
+  }
+  var filter=document.getElementById('filter');
+  filter.addEventListener('input',function(){
+    var q=filter.value.trim().toLowerCase(), any=false;
+    sections.forEach(function(sec){
+      var m=!q || sec.textContent.toLowerCase().indexOf(q)>=0;
+      sec.style.display=m?'':'none'; if(m) any=true;
+      if(q) sec.classList.remove('collapsed');
+    });
+    var e=document.getElementById('noresult');
+    if(!any && q){ if(!e){ e=document.createElement('div'); e.id='noresult'; e.className='empty';
+      e.textContent='No matches.'; feed.appendChild(e); } }
+    else if(e){ e.remove(); }
+  });
+  var ta=document.getElementById('toggleAll'), collapsed=false;
+  ta.addEventListener('click',function(){
+    collapsed=!collapsed;
+    sections.forEach(function(s){ s.classList.toggle('collapsed',collapsed); });
+    ta.textContent=collapsed?'Expand all':'Collapse all';
+  });
+  var root=document.documentElement, tb=document.getElementById('theme'), saved=null;
+  try{ saved=localStorage.getItem('theme'); }catch(e){}
+  if(saved) root.setAttribute('data-theme',saved);
+  tb.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    var sysDark=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next=(cur? cur==='dark' : sysDark) ? 'light':'dark';
+    root.setAttribute('data-theme',next);
+    try{ localStorage.setItem('theme',next); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+# Where you are. Fajr is location-specific, so these matter.
+location:
+  latitude: 51.5074
+  longitude: -0.1278
+  timezone: Europe/London
+
+# How Fajr is calculated. Pick the convention your mosque or timetable uses.
+# method (angle): MUSLIM_WORLD_LEAGUE (18), KARACHI (18), EGYPTIAN (19.5),
+#   MOON_SIGHTING_COMMITTEE (18 + seasonal), NORTH_AMERICA / ISNA (15),
+#   UMM_AL_QURA (18.5), DUBAI (18.2), KUWAIT (18), QATAR (18), SINGAPORE (20), UOIF (12)
+fajr:
+  method: MUSLIM_WORLD_LEAGUE
+  # High-latitude rule. REQUIRED for London in summer, when the sun never reaches
+  # the Fajr angle below the horizon and the plain calculation has no answer.
+  # options: SEVENTH_OF_THE_NIGHT (recommended), MIDDLE_OF_THE_NIGHT, TWILIGHT_ANGLE
+  # Note: MIDDLE_OF_THE_NIGHT gives very early summer Fajr; if you use it, widen the
+  # cron window in .github/workflows/fajr-digest.yml to start earlier.
+  high_latitude_rule: SEVENTH_OF_THE_NIGHT
+
+digest:
+  # Which LLM writes the brief:
+  #   gemini    -> Google's free tier (get a free key at https://aistudio.google.com/apikey,
+  #               add it as the GEMINI_API_KEY repo secret). Free, recommended.
+  #   anthropic -> Claude (needs ANTHROPIC_API_KEY, pay-as-you-go, ~cents/month).
+  # With no key set for the chosen provider, the page still builds as a plain list (no AI).
+  provider: gemini
+  gemini_model: gemini-2.5-flash
+  model: claude-haiku-4-5-20251001   # used only when provider is anthropic
+  # Title shown at the top of the page.
+  title: "Nabil's morning brief"
+  # Max source items pulled per section before summarising.
+  max_items_per_section: 20
+  # Standing interests: the LLM ranks and filters every section against these, so you get
+  # what matters to you rather than just the newest headlines. Plain English; edit freely.
+  interests: >
+    Give me a real picture of what is going on in the world, prioritised by what matters to
+    me. Rank items by relevance to the priorities below, then importance, then freshness,
+    and drop off-interest noise even when it technically fits a section. Merge duplicate
+    stories into one.
+
+    Prioritise:
+    - Islamic / Sharia-compliant markets: the Islamic S&P and halal equity benchmarks (such
+      as the S&P 500 Shariah and Dow Jones Islamic Market indices), prioritised over the
+      conventional S&P 500. Put these under Financial.
+    - Crypto, fast: new significant token or memecoin launches (especially anything involving
+      Donald Trump), major regulation, and market-moving events. Flag these prominently.
+    - Donald Trump: keep me fully up to date on what he is doing. Let Trump-related news
+      appear in whichever section it naturally belongs (Financial, Ummah, Tech, and so on),
+      in proportion to its real significance. Do not force him into every section, repeat him
+      across sections, or over-cover him.
+
+    Downrank or exclude:
+    - Tennis and Wimbledon, and other sport outside my Sports scope, UNLESS it is genuinely
+      major, moves markets (put that under Financial), or ties into another section.
+    - Celebrity, royals, and lifestyle filler.
+
+  # Daily transcript summaries of YouTube channels you want the insight from without watching.
+  # Free auto-captions via yt-dlp, summarised by the LLM above. `match` (optional) restricts
+  # to videos whose title contains that text; omit it to summarise the channel's latest video.
+  transcript_summaries:
+    - name: Nothing But Facts
+      feed: https://www.youtube.com/feeds/videos.xml?channel_id=UC2cX3SmsdWsrRS8t_5zvzEw
+      match: nbf
+      style: >
+        Focus on the substantive topics (religion, scholarship, current affairs, ideas).
+        Skip opening small talk, jokes, and off-topic banter. For each substantive topic,
+        an <h3> naming it followed by a <ul> of two or three short bullets, in order.
+    - name: MarketMobster
+      feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCjJ90kZCcv5oTSeqJLlFyqA
+      min_words: 400   # skip Shorts; summarise his substantive videos
+      style: >
+        His key market and crypto insights, calls, and reasoning from this video, as a <ul>
+        of short bullet points. I want the takeaways, not a play-by-play.
+
+# The brief is organised into these sections, in this order. Each section pulls from
+# its own feeds and is summarised against its "brief" (its scope). A section with no
+# in-scope items is skipped. RSS only, on purpose: RSS is published for machine use,
+# whereas scraping full pages can breach a site's terms. feedparser ignores a dead
+# feed, so a bad URL just contributes nothing rather than crashing the run.
+sections:
+  - name: Ummah
+    brief: >
+      Middle East and Muslim-world political, social, and conflict news, and anything
+      worldwide that directly affects the Muslim ummah. NOT general world sport or
+      entertainment (those belong in Sports, or nowhere). These feeds are a curated
+      allowlist of trusted voices; treat them as the approved set.
+    feeds:
+      - https://www.aljazeera.com/xml/rss/all.xml
+      - https://5pillarsuk.com/feed/
+      - https://www.middleeasteye.net/rss
+      - https://declassifieduk.org/feed/
+      # Writer-follows via Google News (surface their bylines plus pieces about them):
+      - https://news.google.com/rss/search?q=%22Peter+Oborne%22&hl=en-GB&gl=GB&ceid=GB:en
+      - https://news.google.com/rss/search?q=%22Sami+Hamdi%22&hl=en-GB&gl=GB&ceid=GB:en
+
+  - name: London
+    brief: >
+      News specific to London.
+    feeds:
+      - https://feeds.bbci.co.uk/news/england/london/rss.xml
+
+  - name: Tech
+    brief: >
+      Technology industry, products, and research.
+    feeds:
+      - https://www.theverge.com/rss/index.xml
+      - https://feeds.arstechnica.com/arstechnica/index
+      - https://hnrss.org/frontpage
+
+  - name: Medical
+    brief: >
+      Medicine, health science, and biotech.
+    feeds:
+      - https://www.statnews.com/feed/
+      - https://www.sciencedaily.com/rss/health_medicine.xml
+
+  - name: Financial
+    brief: >
+      Markets, economy, business, and crypto.
+    feeds:
+      - https://www.cnbc.com/id/100003114/device/rss/rss.html
+      - https://www.coindesk.com/arc/outboundfeeds/rss/
+      - https://cointelegraph.com/rss
+      # Islamic / Sharia-compliant finance (niche; Google News query so it is never empty):
+      - https://news.google.com/rss/search?q=%22Islamic+finance%22+OR+sukuk+OR+%22Sharia-compliant%22+OR+%22halal+investing%22+OR+%22Islamic+banking%22&hl=en-GB&gl=GB&ceid=GB:en
+
+  - name: Sports
+    brief: >
+      Football: internationals, and the Premier League, La Liga, and Bundesliga only.
+      Combat sports: MMA (UFC and Bellator), boxing (big stories only), kickboxing
+      (Glory only), and Muay Thai (ONE Championship, and anything on Hamza El Haimer).
+      Ignore all other leagues and other sports.
+    feeds:
+      - https://feeds.bbci.co.uk/sport/football/rss.xml
+      - https://www.theguardian.com/football/rss
+      - https://www.mmafighting.com/rss/index.xml
+      - https://www.sherdog.com/rss/news.xml
+
+  - name: Podcasts
+    exclude_shorts: true   # drop YouTube Shorts; only list full episodes
+    brief: >
+      Muslim podcast and video channels to screen daily. These are YouTube channels, so
+      you have NOT watched the videos. For this section only, do not synthesise or
+      summarise contents: list new episodes, each as "Channel name: episode title" with
+      its link. Include only episodes published in roughly the last day or two, and do
+      not invent anything about what was discussed.
+    feeds:
+      - https://www.youtube.com/feeds/videos.xml?channel_id=UC2cX3SmsdWsrRS8t_5zvzEw  # Safina Society (incl. Nothing but Facts)
+      - https://www.youtube.com/feeds/videos.xml?channel_id=UCWJPKXhkcMGXafdtqGx1mEw  # The Thinking Muslim
+      - https://www.youtube.com/feeds/videos.xml?channel_id=UCl791j-PxhtLRyRUi2aP9jQ  # 5Pillars (incl. The Blood Brothers show)

@@ -170,23 +170,29 @@ def render_body_ai(sections, cfg, today):
         "noise even when it technically fits the section. But ALWAYS keep an item that "
         "matches one of my explicitly named priority interests when the feeds contain "
         "one, even if it seems minor.\n"
-        "- Synthesise the kept items into one to three short paragraphs in your own "
-        "words, and include an <a> link to the source for EVERY story you keep.\n"
+        "- Keep at most the top 6 stories per section. Present each section as a "
+        "<ul class=\"bullets\"> of the key facts (one short <li> per kept story, each "
+        "carrying an <a> link to its source), then a <div class=\"prose\"> giving one or "
+        "two short paragraphs on why these stories matter and the bigger picture (also "
+        "linking sources). The bullets are the at-a-glance facts; the prose is the deeper "
+        "why-it-matters, not a restatement of the bullets.\n"
         "- Put each story in only one section (its most relevant); do not repeat the "
         "same story across sections unless a section genuinely covers a distinct angle.\n"
         "- If a section has nothing in scope, omit that section entirely.\n"
-        "- Exception for any podcast/video section (e.g. Podcasts): do NOT synthesise. "
-        "List new episodes only, each on its own line as an <a> link to the episode with "
-        "the text 'Channel name: episode title', including only full episodes published in "
-        "roughly the last day or two.\n\n"
+        "- Exception for any podcast/video section (e.g. Podcasts): output only a "
+        "<ul class=\"bullets\"> listing new episodes, each <li> an <a> link with the text "
+        "'Channel name: episode title', full episodes from roughly the last day or two; "
+        "no <div class=\"prose\"> for it.\n\n"
         "Rules:\n"
         "- Do not invent details, numbers, or quotes.\n"
         "- Attribute anything only one source claims; do not state it as fact.\n"
-        "- Output a clean HTML fragment only: <section> blocks, each with an <h2> and "
-        "paragraphs. No <html>, <head>, or <body> tags.\n\n"
+        "- Output a clean HTML fragment only: for each kept section a "
+        "<section data-expand=\"Why it matters\"> containing an <h2>, then a "
+        "<ul class=\"bullets\">, then (except Podcasts) a <div class=\"prose\">. "
+        "No <html>, <head>, or <body> tags.\n\n"
         f"Sections:\n{_sections_prompt(sections)}"
     )
-    return _llm(prompt, cfg, max_tokens=4000) or render_body_fallback(sections)
+    return _llm(prompt, cfg, max_tokens=8000) or render_body_fallback(sections)
 
 
 def has_llm(cfg):
@@ -280,17 +286,20 @@ def build_transcript_summaries(cfg):
         if ep and ep["video_id"] != prev.get("video_id"):
             prompt = (
                 f"Below is the auto-generated transcript of a video from '{name}'. "
-                "Summarise it for my daily brief.\n\n"
-                "Output a clean HTML fragment only: a <section> with an <h2> reading "
-                f"exactly '{name}', then a short <p> naming the video with a link to it, "
-                f"then the following. {(spec.get('style') or '').strip()}\n"
+                "Summarise it for my daily brief in two layers.\n\n"
+                "Output a clean HTML fragment only: a <section data-expand=\"Full "
+                f"summary\"> with an <h2> reading exactly '{name}', then a "
+                "<ul class=\"bullets\"> giving a 3 to 4 bullet TL;DR (one short line per "
+                "main topic), then a <div class=\"prose\"> with the fuller detail: a short "
+                "<p> naming the video with a link to it, then "
+                f"{(spec.get('style') or '').strip()}\n"
                 "Do not invent anything not in the transcript. The transcript is auto-"
                 "generated so proper names may be misspelt; fix obvious ones only if you "
                 "are confident. No <html>, <head>, or <body> tags.\n\n"
                 f"Video title: {ep['title']}\nVideo link: {ep['url']}\n\n"
                 f"Transcript:\n{ep['transcript'][:200000]}"
             )
-            out = _llm(prompt, cfg, max_tokens=2000)
+            out = _llm(prompt, cfg, max_tokens=2500)
             if out:
                 prev = {"video_id": ep["video_id"], "html": out}
                 cache[name] = prev
@@ -350,16 +359,16 @@ a:hover{ text-decoration:underline; }
 main{ max-width:760px; margin:0 auto; padding:1rem; }
 section{ background:var(--card); border:1px solid var(--line); border-radius:.8rem;
   margin:0 0 1rem; box-shadow:0 1px 2px rgba(0,0,0,.04); overflow:hidden; }
-section h2{ font-size:1.1rem; margin:0; padding:.9rem 1rem; cursor:pointer;
-  display:flex; align-items:center; gap:.5rem; }
-section h2::before{ content:"\\25be"; color:var(--muted); font-size:.75rem; transition:transform .15s; }
-section.collapsed h2::before{ transform:rotate(-90deg); }
+section h2{ font-size:1.05rem; margin:0; padding:.9rem 1rem .3rem; }
 section .body{ padding:0 1rem 1rem; }
-section.collapsed .body{ display:none; }
 section h3{ font-size:1rem; margin:1rem 0 .3rem; }
 section p{ margin:.5rem 0; }
 section ul{ margin:.4rem 0 .8rem; padding-left:1.2rem; }
 section li{ margin:.25rem 0; }
+.prose{ display:none; margin-top:.6rem; }
+section.expanded .prose{ display:block; }
+.expand{ background:none; border:0; color:var(--accent); cursor:pointer; font:inherit;
+  font-size:.85rem; padding:.4rem 0 0; }
 section article{ margin:.7rem 0; }
 section article h3{ margin:0 0 .2rem; }
 .source{ color:var(--muted); font-size:.82rem; margin:.15rem 0 0; }
@@ -379,7 +388,7 @@ footer{ max-width:760px; margin:0 auto; padding:1.4rem 1rem 3rem; color:var(--mu
 <nav class="chips" id="nav"></nav>
 <div class="toolbar">
   <input id="filter" type="search" placeholder="Filter the feed..." autocomplete="off">
-  <button id="toggleAll">Collapse all</button>
+  <button id="toggleAll">Expand all</button>
 </div>
 <main id="feed">
 __BODY__
@@ -397,17 +406,24 @@ and may contain errors; follow the links for the originals.</footer>
     var n=h2.nextSibling;
     while(n){ var nx=n.nextSibling; body.appendChild(n); n=nx; }
     sec.appendChild(body);
-    h2.addEventListener('click',function(){ sec.classList.toggle('collapsed'); });
+    var prose=body.querySelector('.prose');
+    if(prose){
+      var label=sec.getAttribute('data-expand')||'Expand';
+      var btn=document.createElement('button'); btn.className='expand';
+      btn.textContent=label+' ▾';
+      btn.addEventListener('click',function(){
+        var on=sec.classList.toggle('expanded');
+        btn.textContent=on?label+' ▴':label+' ▾';
+      });
+      body.insertBefore(btn, prose);
+    }
   });
   var nav=document.getElementById('nav');
   var chips=sections.map(function(sec){
     var h2=sec.querySelector('h2'); if(!h2) return null;
     var b=document.createElement('button'); b.className='chip';
     b.textContent=h2.textContent.trim(); b.dataset.sec=sec.id;
-    b.addEventListener('click',function(){
-      sec.classList.remove('collapsed');
-      sec.scrollIntoView({behavior:'smooth',block:'start'});
-    });
+    b.addEventListener('click',function(){ sec.scrollIntoView({behavior:'smooth',block:'start'}); });
     nav.appendChild(b); return b;
   }).filter(Boolean);
   if('IntersectionObserver' in window){
@@ -424,18 +440,23 @@ and may contain errors; follow the links for the originals.</footer>
     sections.forEach(function(sec){
       var m=!q || sec.textContent.toLowerCase().indexOf(q)>=0;
       sec.style.display=m?'':'none'; if(m) any=true;
-      if(q) sec.classList.remove('collapsed');
     });
     var e=document.getElementById('noresult');
     if(!any && q){ if(!e){ e=document.createElement('div'); e.id='noresult'; e.className='empty';
       e.textContent='No matches.'; feed.appendChild(e); } }
     else if(e){ e.remove(); }
   });
-  var ta=document.getElementById('toggleAll'), collapsed=false;
+  var ta=document.getElementById('toggleAll'), allOpen=false;
   ta.addEventListener('click',function(){
-    collapsed=!collapsed;
-    sections.forEach(function(s){ s.classList.toggle('collapsed',collapsed); });
-    ta.textContent=collapsed?'Expand all':'Collapse all';
+    allOpen=!allOpen;
+    sections.forEach(function(s){
+      if(s.querySelector('.prose')){
+        s.classList.toggle('expanded',allOpen);
+        var b=s.querySelector('.expand');
+        if(b){ var lb=s.getAttribute('data-expand')||'Expand'; b.textContent=allOpen?lb+' ▴':lb+' ▾'; }
+      }
+    });
+    ta.textContent=allOpen?'Collapse all':'Expand all';
   });
   var root=document.documentElement, tb=document.getElementById('theme'), saved=null;
   try{ saved=localStorage.getItem('theme'); }catch(e){}

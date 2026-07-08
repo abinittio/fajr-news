@@ -76,14 +76,16 @@ def latest_with_transcript(feed_url, match=None, min_words=0, max_check=8):
     `min_words` long (to skip Shorts), or None if none of the recent matching videos
     qualify yet."""
     d = feedparser.parse(feed_url)
+    # Drop Shorts up front so they don't use up the max_check budget on channels (like
+    # MarketMobster) that post many Shorts between substantive uploads.
     videos = [
         (getattr(e, "yt_videoid", None), e.title, e.link)
         for e in d.entries
-        if getattr(e, "yt_videoid", None) and _matches(e.title, match)
+        if getattr(e, "yt_videoid", None)
+        and _matches(e.title, match)
+        and "/shorts/" not in (e.link or "")
     ]
     for vid, title, url in videos[:max_check]:
-        if "/shorts/" in url:
-            continue  # Shorts are too short to summarise usefully
         text = _fetch_transcript(vid)
         if text and len(text.split()) >= min_words:
             return {"video_id": vid, "title": title, "url": url, "transcript": text}

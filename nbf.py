@@ -10,13 +10,18 @@ import glob
 import json
 import os
 import tempfile
+import time
 
 import feedparser
 
 
 def _matches(title, match):
-    """A title matches if `match` is falsy (any video) or is a case-insensitive substring."""
-    return not match or match.lower() in title.lower()
+    """A title matches if `match` is falsy (any video) or any of its "|"-separated
+    alternatives is a case-insensitive substring of the title."""
+    if not match:
+        return True
+    low = title.lower()
+    return any(tok.strip() in low for tok in match.lower().split("|") if tok.strip())
 
 
 def _fetch_transcript(video_id):
@@ -34,16 +39,23 @@ def _fetch_transcript(video_id):
             "outtmpl": base,
             "quiet": True,
             "no_warnings": True,
+            "retries": 5,
+            "extractor_retries": 3,
+            "socket_timeout": 20,
         }
-        try:
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                ydl.download([f"https://www.youtube.com/watch?v={video_id}"])
-        except Exception:
-            return None  # no captions yet, or YouTube blocked the fetch
-
-        files = sorted(glob.glob(base + "*.json3"))
+        files = []
+        for attempt in range(2):  # caption downloads are intermittently flaky; retry once
+            try:
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    ydl.download([f"https://www.youtube.com/watch?v={video_id}"])
+            except Exception:
+                pass
+            files = sorted(glob.glob(base + "*.json3"))
+            if files:
+                break
+            time.sleep(2)
         if not files:
-            return None
+            return None  # no captions yet, or YouTube blocked the fetch
         parts = []
         try:
             data = json.load(open(files[0], encoding="utf-8"))

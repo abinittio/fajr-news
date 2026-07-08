@@ -7,8 +7,10 @@ publishes the page and stops the once-a-day guard from firing twice.
 """
 
 import html
+import json
 import os
 import re
+import socket
 import sys
 import time
 from datetime import datetime
@@ -20,8 +22,12 @@ import yaml
 
 from fajr import fajr_for
 
+# A single unresponsive feed host must not hang the whole run.
+socket.setdefaulttimeout(30)
+
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / "state" / "last_run.txt"
+CACHE = ROOT / "state" / "transcripts.json"
 OUT = ROOT / "docs" / "index.html"
 
 
@@ -161,9 +167,13 @@ def render_body_ai(sections, cfg, today):
         "stories, Glory kickboxing, and ONE Championship or Hamza El Haimer Muay Thai.\n"
         "- Then rank the surviving items by relevance to my interests above, then "
         "importance, then recency; lead with the most relevant, and drop off-interest "
-        "noise even when it technically fits the section.\n"
+        "noise even when it technically fits the section. But ALWAYS keep an item that "
+        "matches one of my explicitly named priority interests when the feeds contain "
+        "one, even if it seems minor.\n"
         "- Synthesise the kept items into one to three short paragraphs in your own "
-        "words, with <a> links to the sources.\n"
+        "words, and include an <a> link to the source for EVERY story you keep.\n"
+        "- Put each story in only one section (its most relevant); do not repeat the "
+        "same story across sections unless a section genuinely covers a distinct angle.\n"
         "- If a section has nothing in scope, omit that section entirely.\n"
         "- Exception for any podcast/video section (e.g. Podcasts): do NOT synthesise. "
         "List new episodes only, each on its own line as an <a> link to the episode with "
@@ -250,33 +260,49 @@ def _anthropic(prompt, model, max_tokens):
 
 
 def build_transcript_summaries(cfg):
-    """Summarise the newest captioned video from each configured channel. Returns the
-    concatenated HTML fragments (one <section> each), or "" if none produced output."""
+    """Summarise the newest captioned video from each configured channel. Caches each
+    summary (keyed by video id) so a morning when yt-dlp is blocked or an episode has no
+    captions yet reuses the last good summary rather than dropping the whole section."""
     from nbf import latest_with_transcript
 
-    blocks = []
+    cache = {}
+    if CACHE.exists():
+        try:
+            cache = json.loads(CACHE.read_text(encoding="utf-8"))
+        except Exception:
+            cache = {}
+
+    blocks, changed = [], False
     for spec in cfg["digest"].get("transcript_summaries", []):
+        name = spec["name"]
+        prev = cache.get(name) or {}
         ep = latest_with_transcript(spec["feed"], spec.get("match"), spec.get("min_words", 0))
-        if not ep:
-            print(f"No captioned video for {spec['name']} yet; skipping.")
-            continue
-        prompt = (
-            f"Below is the auto-generated transcript of a video from '{spec['name']}'. "
-            "Summarise it for my daily brief.\n\n"
-            "Output a clean HTML fragment only: a <section> with an <h2> reading exactly "
-            f"'{spec['name']}', then a short <p> naming the video with a link to it, then "
-            f"the following. {(spec.get('style') or '').strip()}\n"
-            "Do not invent anything not in the transcript. The transcript is auto-generated "
-            "so proper names may be misspelt; fix obvious ones only if you are confident. "
-            "No <html>, <head>, or <body> tags.\n\n"
-            f"Video title: {ep['title']}\nVideo link: {ep['url']}\n\n"
-            f"Transcript:\n{ep['transcript'][:200000]}"
-        )
-        out = _llm(prompt, cfg, max_tokens=2000)
-        if out:
-            blocks.append(out)
+        if ep and ep["video_id"] != prev.get("video_id"):
+            prompt = (
+                f"Below is the auto-generated transcript of a video from '{name}'. "
+                "Summarise it for my daily brief.\n\n"
+                "Output a clean HTML fragment only: a <section> with an <h2> reading "
+                f"exactly '{name}', then a short <p> naming the video with a link to it, "
+                f"then the following. {(spec.get('style') or '').strip()}\n"
+                "Do not invent anything not in the transcript. The transcript is auto-"
+                "generated so proper names may be misspelt; fix obvious ones only if you "
+                "are confident. No <html>, <head>, or <body> tags.\n\n"
+                f"Video title: {ep['title']}\nVideo link: {ep['url']}\n\n"
+                f"Transcript:\n{ep['transcript'][:200000]}"
+            )
+            out = _llm(prompt, cfg, max_tokens=2000)
+            if out:
+                prev = {"video_id": ep["video_id"], "html": out}
+                cache[name] = prev
+                changed = True
+        if prev.get("html"):
+            blocks.append(prev["html"])
         else:
-            print(f"{spec['name']} summary: LLM returned nothing; skipping.")
+            print(f"No summary available yet for {name}; skipping.")
+
+    if changed:
+        CACHE.parent.mkdir(parents=True, exist_ok=True)
+        CACHE.write_text(json.dumps(cache), encoding="utf-8")
     return "\n".join(blocks)
 
 

@@ -60,7 +60,7 @@ digest:
   transcript_summaries:
     - name: Nothing But Facts
       feed: https://www.youtube.com/feeds/videos.xml?channel_id=UC2cX3SmsdWsrRS8t_5zvzEw
-      match: nbf
+      match: "nbf|nothing but facts"
       style: >
         Focus on the substantive topics (religion, scholarship, current affairs, ideas).
         Skip opening small talk, jokes, and off-topic banter. For each substantive topic,

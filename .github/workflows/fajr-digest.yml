@@ -46,7 +46,7 @@ jobs:
         run: |
           git config user.name "fajr-digest-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/index.html state/last_run.txt
+          git add docs/index.html state/
           if git diff --cached --quiet; then
             echo "Nothing new this tick."
           else

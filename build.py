@@ -8,6 +8,7 @@ publishes the page and stops the once-a-day guard from firing twice.
 
 import html
 import os
+import re
 import sys
 import time
 from datetime import datetime
@@ -31,6 +32,38 @@ def load_config():
 
 def already_posted_today(today_str: str) -> bool:
     return STATE.exists() and STATE.read_text(encoding="utf-8").strip() == today_str
+
+
+# --- Output hardening --------------------------------------------------------
+# Model output is built from RSS titles and video transcripts, both of which are
+# attacker-influenceable, and is injected into the page as HTML. Strip scripting
+# vectors defensively (prompt-injection -> stored XSS on the reader's own page).
+_FENCE_OPEN = re.compile(r"^\s*```[a-zA-Z]*\s*\n")
+_SCRIPT_BLOCK = re.compile(r"<\s*script\b[^>]*>.*?<\s*/\s*script\s*>", re.IGNORECASE | re.DOTALL)
+_DANGER_TAGS = re.compile(r"<\s*/?\s*(script|iframe|object|embed|base|meta|link)\b[^>]*>", re.IGNORECASE)
+_ON_ATTR = re.compile(r"\son\w+\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+)", re.IGNORECASE)
+_JS_URI = re.compile(r"""(href|src)\s*=\s*(['"])\s*(?:javascript|data|vbscript):[^'"]*(['"])""", re.IGNORECASE)
+
+
+def _clean_html(text):
+    """Unwrap a markdown code fence the model may add, and neutralise scripting."""
+    if not text:
+        return None
+    t = text.strip()
+    if t.startswith("```"):
+        t = _FENCE_OPEN.sub("", t, count=1)
+        if t.rstrip().endswith("```"):
+            t = t.rstrip()[:-3]
+    t = _SCRIPT_BLOCK.sub("", t)
+    t = _DANGER_TAGS.sub("", t)
+    t = _ON_ATTR.sub("", t)
+    t = _JS_URI.sub(r'\1="#"', t)
+    return t.strip() or None
+
+
+def _safe_url(u):
+    """Allow only http(s) links; anything else (javascript:, data:, ...) becomes '#'."""
+    return u if isinstance(u, str) and u.lower().startswith(("http://", "https://")) else "#"
 
 
 def fetch_sections(sections, max_items):
@@ -83,7 +116,7 @@ def render_body_fallback(sections):
         for it in sec["items"]:
             title = html.escape(it["title"])
             source = html.escape(it["source"])
-            link = html.escape(it["link"], quote=True)
+            link = html.escape(_safe_url(it["link"]), quote=True)
             parts.append(
                 f'<article><h3><a href="{link}">{title}</a></h3>'
                 f'<p class="source">{source}</p></article>'
@@ -157,17 +190,19 @@ def has_llm(cfg):
 
 
 def _llm(prompt, cfg, max_tokens):
-    """Dispatch to the configured LLM provider. Returns text, or None on any failure."""
+    """Dispatch to the configured LLM provider, then harden the output. Returns cleaned
+    HTML text, or None on any failure / empty response."""
     provider = cfg["digest"].get("provider", "gemini").lower()
+    out = None
     if provider == "gemini":
         key = os.environ.get("GEMINI_API_KEY")
-        model = cfg["digest"].get("gemini_model", "gemini-2.5-flash")
-        return _gemini(prompt, model, key, max_tokens) if key else None
-    if provider == "anthropic":
+        if key:
+            out = _gemini(prompt, cfg["digest"].get("gemini_model", "gemini-2.5-flash"), key, max_tokens)
+    elif provider == "anthropic":
         key = os.environ.get("ANTHROPIC_API_KEY")
-        model = cfg["digest"].get("model", "claude-haiku-4-5-20251001")
-        return _anthropic(prompt, model, max_tokens) if key else None
-    return None
+        if key:
+            out = _anthropic(prompt, cfg["digest"].get("model", "claude-haiku-4-5-20251001"), max_tokens)
+    return _clean_html(out)
 
 
 def _gemini(prompt, model, key, max_tokens):
@@ -177,7 +212,7 @@ def _gemini(prompt, model, key, max_tokens):
     try:
         resp = requests.post(
             url,
-            params={"key": key},
+            headers={"x-goog-api-key": key},  # key in header, not URL, so it can't leak into error logs
             json={
                 "contents": [{"parts": [{"text": prompt}]}],
                 # thinkingBudget 0 stops 2.5 "thinking" models from spending the output

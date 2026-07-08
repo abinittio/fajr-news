@@ -269,7 +269,7 @@ def build_transcript_summaries(cfg):
     """Summarise the newest captioned video from each configured channel. Caches each
     summary (keyed by video id) so a morning when yt-dlp is blocked or an episode has no
     captions yet reuses the last good summary rather than dropping the whole section."""
-    from nbf import latest_with_transcript
+    from nbf import latest_with_transcript, latest_video_link
 
     cache = {}
     if CACHE.exists():
@@ -307,7 +307,17 @@ def build_transcript_summaries(cfg):
         if prev.get("html"):
             blocks.append(prev["html"])
         else:
-            print(f"No summary available yet for {name}; skipping.")
+            latest = latest_video_link(spec["feed"], spec.get("match"))
+            if latest:
+                url = html.escape(_safe_url(latest["url"]), quote=True)
+                title = html.escape(latest["title"])
+                blocks.append(
+                    f'<section><h2>{html.escape(name)}</h2><ul class="bullets"><li>'
+                    f'Latest video: <a href="{url}">{title}</a> '
+                    "(no transcript available yet).</li></ul></section>"
+                )
+            else:
+                print(f"No summary or video for {name}; skipping.")
 
     if changed:
         CACHE.parent.mkdir(parents=True, exist_ok=True)

@@ -90,3 +90,18 @@ def latest_with_transcript(feed_url, match=None, min_words=0, max_check=8):
         if text and len(text.split()) >= min_words:
             return {"video_id": vid, "title": title, "url": url, "transcript": text}
     return None
+
+
+def latest_video_link(feed_url, match=None):
+    """Return {title, url} of the newest matching non-Short video, ignoring captions.
+    A fallback so a channel's slot can link its latest upload even when no transcript
+    is available."""
+    d = feedparser.parse(feed_url)
+    for e in d.entries:
+        if (
+            getattr(e, "yt_videoid", None)
+            and _matches(e.title, match)
+            and "/shorts/" not in (e.link or "")
+        ):
+            return {"title": e.title, "url": e.link}
+    return None

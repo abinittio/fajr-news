@@ -58,13 +58,6 @@ digest:
   # Free auto-captions via yt-dlp, summarised by the LLM above. `match` (optional) restricts
   # to videos whose title contains that text; omit it to summarise the channel's latest video.
   transcript_summaries:
-    - name: Nothing But Facts
-      feed: https://www.youtube.com/feeds/videos.xml?channel_id=UC2cX3SmsdWsrRS8t_5zvzEw
-      match: "nbf|nothing but facts"
-      style: >
-        Focus on the substantive topics (religion, scholarship, current affairs, ideas).
-        Skip opening small talk, jokes, and off-topic banter. For each substantive topic,
-        an <h3> naming it followed by a <ul> of two or three short bullets, in order.
     - name: MarketMobster
       feed: https://www.youtube.com/feeds/videos.xml?channel_id=UCjJ90kZCcv5oTSeqJLlFyqA
       min_words: 150   # accept his shorter long-form uploads too (Shorts already excluded by URL)
@@ -145,6 +138,5 @@ sections:
       its link. Include only episodes published in roughly the last day or two, and do
       not invent anything about what was discussed.
     feeds:
-      - https://www.youtube.com/feeds/videos.xml?channel_id=UC2cX3SmsdWsrRS8t_5zvzEw  # Safina Society (incl. Nothing but Facts)
       - https://www.youtube.com/feeds/videos.xml?channel_id=UCWJPKXhkcMGXafdtqGx1mEw  # The Thinking Muslim
       - https://www.youtube.com/feeds/videos.xml?channel_id=UCl791j-PxhtLRyRUi2aP9jQ  # 5Pillars (incl. The Blood Brothers show)

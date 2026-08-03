@@ -112,7 +112,7 @@ def render_body_fallback(sections):
     """No API key set: emit an honest raw list of headlines under each section."""
     parts = [
         '<p class="note">Set a free <code>GEMINI_API_KEY</code> secret to get an '
-        "AI-synthesised brief (and the Nothing but Facts summary) instead of this raw "
+        "AI-synthesised brief (and the transcript summaries) instead of this raw "
         "headline list.</p>"
     ]
     for sec in sections:
